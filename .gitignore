@@ -1,33 +1,16 @@
-# Virtual environments
-venv/
-ENV/
-env/
-.venv
-
-# Python
 __pycache__/
-*.py[cod]
-*.so
-.pytest_cache/
-.coverage
-htmlcov/
-
-# IDE
-.vscode/
-.idea/
-*.swp
-*.swo
-
-# Environment variables (CRITICAL!)
+*.pyc
 .env
-.env.local
-
-# Generated files
+venv/
+.venv/
+*.egg-info/
+dist/
+build/
+.pytest_cache/
+.mypy_cache/
+sessions/
+chroma_db/
+*.db
 logs/
-outputs/
-*.json
-*.log
-
-# OS
+eval_results/
 .DS_Store
-Thumbs.db
