@@ -1,12 +1,19 @@
 .PHONY: help setup test test-local test-week lint run-week clean
 
-PYTHON ?= python
+PYTHON ?= python3
 PYTEST ?= pytest
+
+MIN_PYTHON_VERSION = 3.11
+
+check-python: ## Verify Python version meets minimum requirement
+	@$(PYTHON) -c "import sys; v=sys.version_info; exit(0 if (v.major, v.minor) >= (3, 11) else 1)" 2>/dev/null \
+		|| (echo "ERROR: Python 3.11+ required. Found: $($(PYTHON) --version 2>&1)" && echo "Install with: brew install python@3.12" && exit 1)
+	@echo "Python version OK: $($(PYTHON) --version)"
 
 help: ## Show this help
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-20s\033[0m %s\n", $$1, $$2}'
 
-setup: ## Create venv, install deps, copy .env.example
+setup: check-python ## Create venv, install deps, copy .env.example
 	$(PYTHON) -m venv venv
 	. venv/bin/activate && pip install --upgrade pip && pip install -r requirements.txt
 	@test -f .env || cp .env.example .env

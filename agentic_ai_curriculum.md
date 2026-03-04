@@ -44,10 +44,18 @@ This curriculum is designed around three principles derived from what employers 
 ### Required Software
 
 ```bash
-# Python 3.11+
-python --version
+# Python 3.11+ (REQUIRED -- will not work with older versions)
+# macOS: brew install python@3.12
+# Ubuntu: sudo apt install python3.12
+# Windows: download from python.org
+python3 --version  # Must show 3.11 or higher
 
-# Claude Code CLI
+# Node.js 18+ (needed for MCP servers in Weeks 3 and 5)
+# macOS: brew install node
+# Or download from nodejs.org
+node --version
+
+# Claude Code CLI (optional but recommended)
 npm install -g @anthropic-ai/claude-code
 
 # Core Python dependencies

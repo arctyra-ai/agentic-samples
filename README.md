@@ -2,13 +2,24 @@
 
 Production-ready multi-agent systems with MCP, LangGraph, evaluation, and deployment.
 
+## Prerequisites
+
+- **Python 3.11+** (required -- run `python3 --version` to check)
+  - macOS: `brew install python@3.12`
+  - Ubuntu: `sudo apt install python3.12`
+  - Windows: download from python.org
+- **Node.js 18+** (needed for MCP servers in Weeks 3 and 5)
+  - Install from nodejs.org or `brew install node`
+- **Git**
+- **An Anthropic API key** (get one at https://console.anthropic.com/api-keys)
+
 ## Quick Start
 
 ```bash
 # 1. Clone and setup
 git clone https://github.com/arctyra-ai/agentic-samples.git
 cd agentic-samples
-make setup
+make setup    # checks Python version, creates venv, installs deps
 
 # 2. Add your API keys
 # Edit .env with your ANTHROPIC_API_KEY (required) and others (optional)
@@ -16,6 +27,8 @@ make setup
 # 3. Start Week 1
 make run-week W=01
 ```
+
+If `make setup` fails with a Python version error, install Python 3.11+ first (see Prerequisites above).
 
 ## Structure
 
