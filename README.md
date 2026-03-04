@@ -5,11 +5,16 @@ Production-ready multi-agent systems with MCP, LangGraph, evaluation, and deploy
 ## Quick Start
 
 ```bash
-python -m venv venv
-source venv/bin/activate
-pip install -r requirements.txt
-cp .env.example .env  # Add your API keys
-python week01_agent_fundamentals/agent.py
+# 1. Clone and setup
+git clone https://github.com/arctyra-ai/agentic-samples.git
+cd agentic-samples
+make setup
+
+# 2. Add your API keys
+# Edit .env with your ANTHROPIC_API_KEY (required) and others (optional)
+
+# 3. Start Week 1
+make run-week W=01
 ```
 
 ## Structure
@@ -21,23 +26,42 @@ python week01_agent_fundamentals/agent.py
 | Multi-Agent Systems | 7-9 | Orchestration, voting, evaluation |
 | Production | 10-12 | Deploy, monitor, capstone |
 
-## Running Tests
+Each week directory contains:
+- `README.md` -- objectives, instructions, success criteria
+- `*_starter.py` -- skeleton with TODOs (start here)
+- `*.py` -- reference solution
+- `test_*.py` -- unit tests
+
+## Common Commands
 
 ```bash
-# All tests
-pytest
-
-# Specific week
-pytest week01_agent_fundamentals/test_agent.py -v
-
-# Tests that don't require API keys
-pytest -m "not requires_api" -v
+make help          # Show all commands
+make setup         # Create venv, install deps, copy .env
+make test          # Run all tests
+make test-local    # Run tests without API keys
+make test-week W=01  # Run tests for a specific week
+make run-week W=01   # Run the main exercise for a week
+make clean         # Remove generated artifacts
 ```
+
+## Files
+
+| File | Purpose |
+|------|---------|
+| `agentic_ai_curriculum.md` | Full 12-week curriculum |
+| `ARCHITECTURE_DIAGRAMS.md` | Mermaid diagrams for every major system |
+| `CLAUDE_PROJECT_INSTRUCTIONS.md` | Setup Claude as your learning companion |
+| `PROGRESS.md` | Checklist to track your progress |
+| `shared/` | Reusable utilities (LLM client, MCP utils, eval helpers) |
 
 ## API Keys Required
 
-- `ANTHROPIC_API_KEY` -- primary LLM provider
+- `ANTHROPIC_API_KEY` -- primary LLM provider (required)
 - `OPENAI_API_KEY` -- secondary provider (optional, for comparison)
 - `LANGCHAIN_API_KEY` -- LangSmith tracing (free tier, used from Week 6)
 
-See `agentic_ai_curriculum.md` for the full 12-week curriculum.
+Copy `.env.example` to `.env` and fill in your keys.
+
+## Estimated API Cost
+
+~$18-33 for the full curriculum using Claude Sonnet. Budget $50 to be safe.

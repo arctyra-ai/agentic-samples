@@ -3,12 +3,11 @@
 import json
 import os
 import pytest
-from mcp_agent import create_mock_router, execute_mock_tool, run_mcp_agent
-
-sys.path = [str(__import__('pathlib').Path(__file__).parent.parent)] + sys.path if 'sys' in dir() else sys.path
 import sys
 from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent))
+
+from mcp_agent import create_mock_router, execute_mock_tool, run_mcp_agent
 from shared.mcp_utils import MCPTool, MCPToolRouter, MCPServerConnection
 
 
