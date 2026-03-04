@@ -1,0 +1,37 @@
+# Week 4: CrewAI Agent Configuration (YAML alternative)
+# This file provides an alternative to code-based agent/task definitions.
+# Load with PyYAML: yaml.safe_load(open('agents_config.yaml'))
+
+agents:
+  task_manager:
+    role: "Task Manager"
+    goal: "Break down user requests into specific actions"
+    backstory: "Expert at parsing user requests and identifying action types"
+
+  storage_agent:
+    role: "Storage Specialist"
+    goal: "Execute CRUD operations safely"
+    backstory: "Responsible for data integrity and task persistence"
+
+  validator_agent:
+    role: "Data Validator"
+    goal: "Validate operations before execution"
+    backstory: "Catches errors proactively before they cause problems"
+
+tasks:
+  parse:
+    description: "Parse user request into action_type and parameters"
+    agent: task_manager
+    expected_output: "JSON with action_type and extracted parameters"
+
+  validate:
+    description: "Validate proposed action for safety and completeness"
+    agent: validator_agent
+    expected_output: "Validation result (approve/reject) with reasoning"
+    depends_on: [parse]
+
+  execute:
+    description: "Execute validated action on task storage"
+    agent: storage_agent
+    expected_output: "Operation result or rejection message"
+    depends_on: [validate]
