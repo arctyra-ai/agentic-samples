@@ -103,6 +103,26 @@ class TestWriteSummary:
         assert Path(outpath).read_text() == "Test summary"
 
 
+class TestPathSandbox:
+    def test_blocks_path_outside_sandbox(self, temp_dir):
+        from agent import set_sandbox, _validate_path
+        set_sandbox(temp_dir)
+        with pytest.raises(ValueError, match="Access denied"):
+            _validate_path("/etc/passwd")
+
+    def test_allows_path_inside_sandbox(self, temp_dir):
+        from agent import set_sandbox, _validate_path
+        set_sandbox(temp_dir)
+        result = _validate_path(f"{temp_dir}/hello.py")
+        assert str(result).startswith(temp_dir)
+
+    def test_blocks_traversal_attack(self, temp_dir):
+        from agent import set_sandbox, _validate_path
+        set_sandbox(temp_dir)
+        with pytest.raises(ValueError, match="Access denied"):
+            _validate_path(f"{temp_dir}/../../etc/passwd")
+
+
 class TestToolDefinitions:
     def test_all_tools_have_required_fields(self):
         for tool in TOOLS:

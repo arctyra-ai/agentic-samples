@@ -85,6 +85,29 @@ TOOLS = [
 
 # --- Tool Implementations ---
 
+# --- Path Sandboxing ---
+
+_SANDBOX_ROOT: str = "."
+
+
+def set_sandbox(directory: str):
+    """Set the sandbox root. All file operations are restricted to this directory."""
+    global _SANDBOX_ROOT
+    _SANDBOX_ROOT = str(Path(directory).resolve())
+
+
+def _validate_path(filepath: str) -> Path:
+    """Validate that a path is within the sandbox. Raises ValueError if not."""
+    resolved = Path(filepath).resolve()
+    sandbox = Path(_SANDBOX_ROOT).resolve()
+    if not str(resolved).startswith(str(sandbox)):
+        raise ValueError(
+            f"Access denied: {filepath} is outside the working directory. "
+            f"Operations are restricted to {sandbox}"
+        )
+    return resolved
+
+
 def execute_tool(name: str, tool_input: dict) -> str:
     """Execute a tool and return result as string."""
     try:
@@ -109,7 +132,7 @@ def execute_tool(name: str, tool_input: dict) -> str:
 
 
 def _list_files(directory: str, pattern: str = "*") -> str:
-    p = Path(directory)
+    p = _validate_path(directory)
     if not p.exists():
         return json.dumps({"error": f"Directory not found: {directory}"})
     if not p.is_dir():
@@ -127,7 +150,7 @@ def _list_files(directory: str, pattern: str = "*") -> str:
 
 
 def _read_file(filepath: str) -> str:
-    p = Path(filepath)
+    p = _validate_path(filepath)
     if not p.exists():
         return json.dumps({"error": f"File not found: {filepath}"})
     if not p.is_file():
@@ -142,7 +165,7 @@ def _read_file(filepath: str) -> str:
 
 
 def _search_in_files(directory: str, pattern: str, file_pattern: str = "*") -> str:
-    p = Path(directory)
+    p = _validate_path(directory)
     if not p.exists():
         return json.dumps({"error": f"Directory not found: {directory}"})
 
@@ -166,7 +189,7 @@ def _search_in_files(directory: str, pattern: str, file_pattern: str = "*") -> s
 
 
 def _get_file_info(filepath: str) -> str:
-    p = Path(filepath)
+    p = _validate_path(filepath)
     if not p.exists():
         return json.dumps({"error": f"File not found: {filepath}"})
 
@@ -189,7 +212,7 @@ def _get_file_info(filepath: str) -> str:
 
 
 def _write_summary(filepath: str, content: str) -> str:
-    p = Path(filepath)
+    p = _validate_path(filepath)
     p.parent.mkdir(parents=True, exist_ok=True)
     p.write_text(content, encoding="utf-8")
     return json.dumps({"status": "written", "path": str(p), "size_bytes": len(content.encode("utf-8"))})
@@ -208,6 +231,7 @@ def run_agent(user_request: str, target_dir: str, max_iterations: int = 10) -> d
     Returns:
         dict with keys: response (str), tool_calls (list), usage (dict)
     """
+    set_sandbox(target_dir)
     client = LLMClient(provider="anthropic", budget_usd=0.50)
     system_prompt = (
         f"You are a file operations assistant. Your working directory is: {target_dir}\n"

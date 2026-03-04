@@ -10,6 +10,7 @@ import sys
 import json
 from typing import TypedDict, Literal
 from pathlib import Path
+from datetime import datetime
 from dotenv import load_dotenv
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
@@ -137,7 +138,7 @@ def transform_format(state: PipelineState) -> dict:
     transformed = {
         "type": state["doc_type"],
         "entities": state["entities"],
-        "processed_at": __import__("datetime").datetime.now().isoformat(),
+        "processed_at": datetime.now().isoformat(),
         "validation_status": "clean" if not state["validation_errors"] else "has_errors",
     }
     return {

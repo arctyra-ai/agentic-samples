@@ -91,7 +91,9 @@ GROUND_TRUTH = [
     },
     {
         "id": "gt_004",
-        "code": "API_KEY = 'sk-abc123secret'\ndef call_api():\n    headers = {'Authorization': f'Bearer {API_KEY}'}\n    return requests.get('https://api.example.com', headers=headers)",
+        # NOTE: This is an intentionally insecure code sample for the agents to detect.
+        # The API key below is fake and exists only as test data.
+        "code": "API_KEY = 'sk-abc123secret'\ndef call_api():\n    headers = {'Authorization': f'Bearer {API_KEY}'}\n    return requests.get('https://api.example.com', headers=headers)",  # noqa: S105
         "filename": "client.py",
         "known_issues": [
             {"type": "security", "description": "Hardcoded API key"},
