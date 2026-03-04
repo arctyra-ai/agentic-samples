@@ -1,1 +1,33 @@
+# Virtual environments
+venv/
+ENV/
+env/
+.venv
+
+# Python
+__pycache__/
+*.py[cod]
+*.so
+.pytest_cache/
+.coverage
+htmlcov/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Environment variables (CRITICAL!)
 .env
+.env.local
+
+# Generated files
+logs/
+outputs/
+*.json
+*.log
+
+# OS
+.DS_Store
+Thumbs.db
