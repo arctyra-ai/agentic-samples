@@ -165,9 +165,9 @@ TOOLS = [
 
 _SIMULATED_RESULTS = {
     "default": [
-        {"title": "Overview Article", "url": "https://example.com/overview", "snippet": "A comprehensive overview of the topic covering key aspects and recent developments."},
-        {"title": "Research Paper", "url": "https://example.com/paper", "snippet": "Recent research findings suggest significant progress in this area."},
-        {"title": "Industry Report", "url": "https://example.com/report", "snippet": "Market analysis shows growing adoption across enterprise sectors."},
+        {"title": "Enterprise AI Adoption Report 2026", "url": "https://example.com/enterprise-ai-2026", "snippet": "Survey of 500 enterprises shows 62% are experimenting with AI agents, 23% have scaled to production. Key barriers: integration complexity, security concerns, cost management."},
+        {"title": "MCP Protocol Overview and Adoption", "url": "https://example.com/mcp-adoption", "snippet": "Model Context Protocol adoption has grown rapidly since open-sourcing. 75% of API gateway vendors plan MCP support by end of 2026. OpenAI, Google, and Microsoft have all adopted the standard."},
+        {"title": "Multi-Agent Systems in Production", "url": "https://example.com/multi-agent-prod", "snippet": "Production multi-agent deployments use 15x more tokens than chat interfaces. Economics only work for high-value tasks. Weighted voting and human-in-the-loop are standard conflict resolution patterns."},
     ]
 }
 
@@ -180,28 +180,86 @@ def execute_tool(name: str, tool_input: dict) -> str:
             return json.dumps({"query": tool_input["query"], "results": results})
 
         elif name == "read_url":
+            url = tool_input["url"]
+            content_map = {
+                "https://example.com/enterprise-ai-2026": (
+                    "A 2026 survey of 500 enterprises found that 62% are experimenting with AI agents "
+                    "and 23% have scaled agentic AI to production. The primary barriers to adoption are "
+                    "integration complexity with legacy systems, security and governance concerns, and "
+                    "managing the cost of multi-agent token usage. High-performing organizations are "
+                    "3x more likely to have scaled agents than their peers. The key differentiator is "
+                    "willingness to redesign workflows rather than layering agents onto existing processes."
+                ),
+                "https://example.com/mcp-adoption": (
+                    "The Model Context Protocol (MCP), created by Anthropic and donated to the Linux "
+                    "Foundation, has become the de facto standard for connecting AI agents to external "
+                    "tools and data sources. OpenAI, Google DeepMind, Microsoft, and AWS have all adopted "
+                    "MCP. By end of 2026, 75% of API gateway vendors are expected to integrate MCP features. "
+                    "MCP replaces custom point-to-point integrations with a universal protocol, similar to "
+                    "how USB-C standardized hardware connectivity. Organizations implementing MCP report "
+                    "significantly reduced integration maintenance costs."
+                ),
+                "https://example.com/multi-agent-prod": (
+                    "Multi-agent systems in production use 15x more tokens than single-agent chat interfaces. "
+                    "The economics only justify multi-agent approaches for high-value tasks requiring diverse "
+                    "expertise. Standard patterns include parallel specialist agents with a synthesizer, "
+                    "weighted voting for conflict resolution, and human-in-the-loop review for edge cases. "
+                    "Evaluation frameworks with ground truth datasets are essential for measuring agent quality."
+                ),
+            }
             return json.dumps({
-                "url": tool_input["url"],
-                "content": f"Detailed content from {tool_input['url']}. This covers the main aspects of the topic with supporting evidence and analysis. Key data points and conclusions are presented.",
-                "word_count": 500,
+                "url": url,
+                "content": content_map.get(url, f"Content from {url} covering the requested topic in detail."),
+                "word_count": 150,
             })
 
         elif name == "extract_key_points":
+            text = tool_input.get("text", "")
+            # Generate points based on content keywords
+            points = []
+            if "enterprise" in text.lower() or "adoption" in text.lower():
+                points = [
+                    "62% of enterprises are experimenting with AI agents, 23% at production scale",
+                    "High performers are 3x more likely to scale agents successfully",
+                    "Workflow redesign is the key differentiator, not just adding agents to existing processes",
+                ]
+            elif "mcp" in text.lower() or "protocol" in text.lower():
+                points = [
+                    "MCP is now the industry standard, adopted by all major vendors",
+                    "75% of gateway vendors will integrate MCP by end of 2026",
+                    "MCP eliminates custom integration maintenance through standardization",
+                ]
+            elif "multi-agent" in text.lower() or "token" in text.lower():
+                points = [
+                    "Multi-agent systems use 15x more tokens than chat interfaces",
+                    "Economics only work for high-value tasks",
+                    "Voting, human-in-the-loop, and evaluation frameworks are standard patterns",
+                ]
+            else:
+                points = [
+                    "Key finding from the source material",
+                    "Supporting data point with specific metrics",
+                    "Actionable implication for practitioners",
+                ]
             return json.dumps({
-                "key_points": [
-                    "Primary finding related to the topic",
-                    "Supporting evidence from multiple sources",
-                    "Emerging trend worth monitoring",
-                ],
+                "key_points": points,
                 "focus": tool_input.get("focus", "general"),
             })
 
         elif name == "compare_sources":
             findings = tool_input.get("findings", [])
             return json.dumps({
-                "agreements": ["Sources agree on core premise"],
-                "contradictions": [],
-                "gaps": ["Limited data on long-term outcomes"],
+                "agreements": [
+                    "All sources confirm rapid growth in agentic AI adoption",
+                    "MCP standardization is accelerating enterprise integration",
+                ],
+                "contradictions": [
+                    "Adoption rates vary: 23% scaled vs. optimistic vendor claims of higher numbers"
+                ],
+                "gaps": [
+                    "Limited data on long-term ROI of multi-agent systems",
+                    "Security governance frameworks still maturing",
+                ],
                 "source_count": len(findings),
             })
 
@@ -239,15 +297,20 @@ def run_research_agent(question: str, session_id: str = None, max_iterations: in
     session = SessionMemory(session_id or datetime.now().strftime("%Y%m%d_%H%M%S"))
 
     system_prompt = (
-        "You are a research assistant. Given a question, use the available tools to:\n"
-        "1. Search for relevant information\n"
-        "2. Read and extract key points from sources\n"
-        "3. Compare findings across sources\n"
-        "4. Generate a report outline\n"
-        "5. Write each section\n\n"
-        "Chain tools logically: search first, then read, extract, compare, outline, write.\n"
-        "When done, provide your final answer as a JSON object matching this schema:\n"
-        '{"question": "...", "sources": [...], "sections": [...], "confidence": 0.0-1.0, "follow_up_questions": [...]}\n'
+        "You are a research assistant. Given a question, use the available tools to research it.\n\n"
+        "WORKFLOW (use each tool at most once or twice):\n"
+        "1. web_search - find relevant sources (call ONCE)\n"
+        "2. read_url - read 1-2 of the top results\n"
+        "3. extract_key_points - pull out the main findings\n"
+        "4. compare_sources - compare if you have multiple sources\n"
+        "5. generate_outline - plan your report structure\n\n"
+        "IMPORTANT: After 4-6 tool calls, you have enough information.\n"
+        "STOP calling tools and write your final report directly as text.\n"
+        "Do NOT call write_section -- instead, produce the complete report yourself.\n\n"
+        "Your final response (with NO tool calls) must be a JSON object:\n"
+        '{"question": "...", "sources": [{"title": "...", "url": "...", "snippet": "...", "relevance": 0.0-1.0}], '
+        '"sections": [{"heading": "...", "content": "...", "source_indices": [0]}], '
+        '"confidence": 0.0-1.0, "follow_up_questions": [...]}\n'
     )
 
     messages = [{"role": "user", "content": f"Research this question: {question}"}]
