@@ -1074,3 +1074,7 @@ Costs assume Claude Sonnet for most calls. Using Opus for evaluation or synthesi
 
 **Last Updated:** March 2026
 **Aligned To:** 2026 job market requirements -- MCP, production deployment, evaluation, multi-agent orchestration
+
+---
+
+**License:** [CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/) -- Copyright (c) 2026 Arctyra AI. Free for learning. Attribution required. No commercial use.

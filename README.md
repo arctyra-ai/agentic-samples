@@ -78,3 +78,11 @@ Copy `.env.example` to `.env` and fill in your keys.
 ## Estimated API Cost
 
 ~$18-33 for the full curriculum using Claude Sonnet. Budget $50 to be safe.
+
+## License
+
+This work is licensed under [Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International](https://creativecommons.org/licenses/by-nc-sa/4.0/).
+
+You are free to use this material for learning and share it with others. You must give credit to [Arctyra AI](https://github.com/arctyra-ai). You may not use it for commercial purposes or sell it. If you adapt it, you must share your version under the same license.
+
+See [LICENSE](LICENSE) for full terms.
