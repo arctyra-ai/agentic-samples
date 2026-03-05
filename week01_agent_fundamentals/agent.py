@@ -97,15 +97,18 @@ def set_sandbox(directory: str):
 
 
 def _validate_path(filepath: str) -> Path:
-    """Validate that a path is within the sandbox. Raises ValueError if not."""
-    resolved = Path(filepath).resolve()
-    sandbox = Path(_SANDBOX_ROOT).resolve()
-    if not str(resolved).startswith(str(sandbox)):
+    """Validate that a path is within the sandbox. Raises ValueError if not.
+
+    Uses os.path.realpath for symlink resolution (handles macOS /var -> /private/var).
+    """
+    resolved = os.path.realpath(filepath)
+    sandbox = os.path.realpath(_SANDBOX_ROOT)
+    if not resolved.startswith(sandbox + os.sep) and resolved != sandbox:
         raise ValueError(
             f"Access denied: {filepath} is outside the working directory. "
             f"Operations are restricted to {sandbox}"
         )
-    return resolved
+    return Path(resolved)
 
 
 def execute_tool(name: str, tool_input: dict) -> str:
