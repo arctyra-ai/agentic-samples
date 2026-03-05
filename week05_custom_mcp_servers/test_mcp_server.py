@@ -21,9 +21,9 @@ class TestToolDefinitions:
 
     def test_all_have_schemas(self):
         for tool in TOOL_DEFINITIONS:
-            assert tool.name
-            assert tool.description
-            assert tool.inputSchema
+            assert tool["name"]
+            assert tool["description"]
+            assert tool["inputSchema"]
 
 
 class TestCreateProject:

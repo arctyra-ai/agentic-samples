@@ -8,7 +8,8 @@ Demonstrates: multi-agent coordination, parallel execution, shared state, role s
 
 import sys
 import json
-from typing import TypedDict
+import operator
+from typing import TypedDict, Annotated
 from pathlib import Path
 from datetime import datetime
 from dotenv import load_dotenv
@@ -27,6 +28,19 @@ except ImportError:
 
 # --- State Schema ---
 
+def _merge_token_usage(left: dict, right: dict) -> dict:
+    """Reducer: merge token usage dicts by summing values."""
+    if not left:
+        return right
+    if not right:
+        return left
+    return {
+        "total_input": left.get("total_input", 0) + right.get("total_input", 0),
+        "total_output": left.get("total_output", 0) + right.get("total_output", 0),
+        "calls": left.get("calls", 0) + right.get("calls", 0),
+    }
+
+
 class ReviewState(TypedDict):
     code: str
     filename: str
@@ -34,7 +48,7 @@ class ReviewState(TypedDict):
     security_findings: list[dict]
     improvement_suggestions: list[dict]
     synthesized_report: dict
-    token_usage: dict
+    token_usage: Annotated[dict, _merge_token_usage]
 
 
 def create_review_state(code: str, filename: str = "unknown.py") -> ReviewState:
@@ -78,7 +92,7 @@ def run_analyzer(state: ReviewState) -> dict:
     usage = client.usage.summary()
     return {
         "analyzer_findings": findings,
-        "token_usage": _merge_usage(state["token_usage"], usage),
+        "token_usage": {"total_input": usage["total_input_tokens"], "total_output": usage["total_output_tokens"], "calls": usage["total_calls"]},
     }
 
 
@@ -101,7 +115,7 @@ def run_security_auditor(state: ReviewState) -> dict:
     usage = client.usage.summary()
     return {
         "security_findings": findings,
-        "token_usage": _merge_usage(state["token_usage"], usage),
+        "token_usage": {"total_input": usage["total_input_tokens"], "total_output": usage["total_output_tokens"], "calls": usage["total_calls"]},
     }
 
 
@@ -123,7 +137,7 @@ def run_improver(state: ReviewState) -> dict:
     usage = client.usage.summary()
     return {
         "improvement_suggestions": suggestions,
-        "token_usage": _merge_usage(state["token_usage"], usage),
+        "token_usage": {"total_input": usage["total_input_tokens"], "total_output": usage["total_output_tokens"], "calls": usage["total_calls"]},
     }
 
 
@@ -161,7 +175,7 @@ def synthesize(state: ReviewState) -> dict:
     usage = client.usage.summary()
     return {
         "synthesized_report": report,
-        "token_usage": _merge_usage(state["token_usage"], usage),
+        "token_usage": {"total_input": usage["total_input_tokens"], "total_output": usage["total_output_tokens"], "calls": usage["total_calls"]},
     }
 
 

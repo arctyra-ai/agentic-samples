@@ -53,12 +53,14 @@ def get_db(db_path: str = DB_PATH) -> sqlite3.Connection:
 
 
 # --- Tool Definitions ---
+# Defined as plain dicts so they work without the MCP SDK installed.
+# Converted to MCP Tool objects only when running as an MCP server.
 
 TOOL_DEFINITIONS = [
-    Tool(
-        name="create_project",
-        description="Create a new project with a name and optional description",
-        inputSchema={
+    {
+        "name": "create_project",
+        "description": "Create a new project with a name and optional description",
+        "inputSchema": {
             "type": "object",
             "properties": {
                 "name": {"type": "string", "description": "Project name (must be unique)"},
@@ -66,16 +68,16 @@ TOOL_DEFINITIONS = [
             },
             "required": ["name"],
         },
-    ),
-    Tool(
-        name="list_projects",
-        description="List all projects with their status and task counts",
-        inputSchema={"type": "object", "properties": {}},
-    ),
-    Tool(
-        name="add_task",
-        description="Add a task to a project",
-        inputSchema={
+    },
+    {
+        "name": "list_projects",
+        "description": "List all projects with their status and task counts",
+        "inputSchema": {"type": "object", "properties": {}},
+    },
+    {
+        "name": "add_task",
+        "description": "Add a task to a project",
+        "inputSchema": {
             "type": "object",
             "properties": {
                 "project_name": {"type": "string", "description": "Name of the project"},
@@ -84,11 +86,11 @@ TOOL_DEFINITIONS = [
             },
             "required": ["project_name", "title"],
         },
-    ),
-    Tool(
-        name="update_task",
-        description="Update a task's status (todo, in_progress, done)",
-        inputSchema={
+    },
+    {
+        "name": "update_task",
+        "description": "Update a task's status (todo, in_progress, done)",
+        "inputSchema": {
             "type": "object",
             "properties": {
                 "task_id": {"type": "integer", "description": "Task ID"},
@@ -96,29 +98,29 @@ TOOL_DEFINITIONS = [
             },
             "required": ["task_id", "status"],
         },
-    ),
-    Tool(
-        name="get_project_status",
-        description="Get detailed status of a project including all tasks",
-        inputSchema={
+    },
+    {
+        "name": "get_project_status",
+        "description": "Get detailed status of a project including all tasks",
+        "inputSchema": {
             "type": "object",
             "properties": {
                 "project_name": {"type": "string"},
             },
             "required": ["project_name"],
         },
-    ),
-    Tool(
-        name="search_tasks",
-        description="Search tasks by keyword across all projects",
-        inputSchema={
+    },
+    {
+        "name": "search_tasks",
+        "description": "Search tasks by keyword across all projects",
+        "inputSchema": {
             "type": "object",
             "properties": {
                 "query": {"type": "string", "description": "Search keyword"},
             },
             "required": ["query"],
         },
-    ),
+    },
 ]
 
 
@@ -234,7 +236,7 @@ if MCP_AVAILABLE:
 
     @app.list_tools()
     async def list_tools() -> list[Tool]:
-        return TOOL_DEFINITIONS
+        return [Tool(**td) for td in TOOL_DEFINITIONS]
 
     @app.call_tool()
     async def call_tool(name: str, arguments: dict) -> list[TextContent]:
