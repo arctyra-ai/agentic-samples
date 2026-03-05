@@ -11,18 +11,18 @@ All diagrams are in Mermaid format. Render with:
 
 ```mermaid
 graph LR
-    W1["Week 1\nAgent Loop\nTool Calling"]
-    W2["Week 2\nTool Chaining\nStructured Output"]
-    W3["Week 3\nMCP Client\nDynamic Discovery"]
-    W4["Week 4\nRAG Pipeline\nVector Search"]
-    W5["Week 5\nCustom MCP Server\nSQLite"]
-    W6["Week 6\nLangGraph\nState Graphs"]
-    W7["Week 7\nMulti-Agent\nParallel Execution"]
-    W8["Week 8\nVoting\nConflict Resolution"]
-    W9["Week 9\nEvaluation\nObservability"]
-    W10["Week 10\nDeploy\nStreamlit + FastAPI"]
-    W11["Week 11\nCapstone\nBuild"]
-    W12["Week 12\nCapstone\nPolish"]
+    W1["Week 1 Agent Loop & Tool Calling"]
+    W2["Week 2 Tool Chaining & Structured Output"]
+    W3["Week 3 MCP Client & Dynamic Discovery"]
+    W4["Week 4 RAG Pipeline & Vector Search"]
+    W5["Week 5 Custom MCP Server\SQLite"]
+    W6["Week 6 LangGraph & State Graphs"]
+    W7["Week 7 Multi-Agent & Parallel Execution"]
+    W8["Week 8 Voting & Conflict Resolution"]
+    W9["Week 9 Evaluation & Observability"]
+    W10["Week 10 Deploy Streamlit + FastAPI"]
+    W11["Week 11 Capstone Build"]
+    W12["Week 12 Capstone Polish"]
 
     W1 --> W2 --> W3
     W3 --> W4 --> W5 --> W6
@@ -74,9 +74,9 @@ graph TD
 graph TB
     Agent["Agent"]
     Router["MCP Tool Router"]
-    FS["MCP Server:\nFilesystem"]
-    DB["MCP Server:\nSQLite"]
-    Future["MCP Server:\n(any new server)"]
+    FS["MCP Server:Filesystem"]
+    DB["MCP Server:SQLite"]
+    Future["MCP Server:(any new server)"]
 
     Agent -->|discover tools| Router
     Agent -->|call tool| Router
@@ -97,14 +97,14 @@ graph TB
 
 ```mermaid
 graph LR
-    Docs["Markdown\nDocuments"]
-    Chunk["Chunker\n512 tokens\n50 overlap"]
-    Embed["Embedding\nModel"]
-    Store["ChromaDB\nVector Store"]
-    Query["User\nQuestion"]
-    Retrieve["Top-K\nRetrieval"]
-    Generate["LLM\nGenerate Answer"]
-    Answer["Answer\n+ Citations"]
+    Docs["Markdown Documents"]
+    Chunk["Chunker 512 tokens 50 overlap"]
+    Embed["Embedding Model"]
+    Store["ChromaDB Vector Store"]
+    Query["User Question"]
+    Retrieve["Top-K Retrieval"]
+    Generate["LLM Generate Answer"]
+    Answer["Answer + Citations"]
 
     Docs --> Chunk --> Embed --> Store
     Query --> Retrieve
@@ -124,8 +124,8 @@ graph LR
 ```mermaid
 graph TD
     Start["START"]
-    Classify["classify_document\n(LLM call)"]
-    Extract["extract_entities\n(LLM call)"]
+    Classify["classify_document (LLM call)"]
+    Extract["extract_entities (LLM call)"]
     Validate["validate_data"]
     Transform["transform_format"]
     Store["store_result"]
@@ -158,12 +158,12 @@ graph TD
 
 ```mermaid
 graph TD
-    Start["START\n(code input)"]
-    Analyzer["Analyzer Agent\nBugs, smells, logic"]
-    Security["Security Agent\nVulnerabilities"]
-    Improver["Improver Agent\nEnhancements"]
-    Synth["Synthesizer\nCombine + resolve"]
-    End["END\n(unified report)"]
+    Start["START (code input)"]
+    Analyzer["Analyzer Agent Bugs, smells, logic"]
+    Security["Security Agent Vulnerabilities"]
+    Improver["Improver Agent Enhancements"]
+    Synth["Synthesizer Combine + resolve"]
+    End["END (unified report)"]
 
     Start --> Analyzer
     Start --> Security
@@ -188,10 +188,10 @@ graph TD
 ```mermaid
 graph TD
     Votes["All Votes In"]
-    Veto{"Security\nBLOCK?"}
-    Unanimous{"All\nAgree?"}
-    Majority{"Clear\nMajority?"}
-    Confidence{"High\nConfidence?"}
+    Veto{"Security BLOCK?"}
+    Unanimous{"All Agree?"}
+    Majority{"Clear Majority?"}
+    Confidence{"High Confidence?"}
     Auto["AUTO-APPROVE"]
     Reject["AUTO-REJECT"]
     Human["HUMAN REVIEW"]
@@ -219,17 +219,17 @@ graph TD
 
 ```mermaid
 graph TB
-    UI["Streamlit UI\n(file upload)"]
-    API["FastAPI\n(/review endpoint)"]
-    Graph["LangGraph\nOrchestration"]
+    UI["Streamlit UI (file upload)"]
+    API["FastAPI (/review endpoint)"]
+    Graph["LangGraph Orchestration"]
     A1["Analyzer"]
     A2["Security"]
     A3["Improver"]
     Synth["Synthesizer"]
     Vote["Voting System"]
-    Log["Structured\nLogging"]
-    Trace["LangSmith\nTracing"]
-    Cost["Cost\nTracker"]
+    Log["Structured Logging"]
+    Trace["LangSmith Tracing"]
+    Cost["Cost Tracker"]
 
     UI --> Graph
     API --> Graph
@@ -259,19 +259,19 @@ graph TB
 
 ```mermaid
 graph TB
-    User["User\nFeature Spec"]
-    Orch["Orchestrator\nDecompose Tasks"]
-    DB["DB Agent\nSchema Design"]
-    BE["Backend Agent\nAPI Endpoints"]
-    FE["Frontend Agent\nComponents"]
-    SEC["Security Agent\nAudit (weight: 2.0)"]
-    QA["QA Agent\nTest Generation"]
-    Vote["Voting\nSystem"]
-    Human["Human Review\n(ties/vetoes)"]
-    Output["Final Output\nCode + Reports"]
-    MCP["MCP Server\nProject DB"]
-    RAG["RAG\nDocs Retrieval"]
-    Eval["Evaluation\nPipeline"]
+    User["User Feature Spec"]
+    Orch["Orchestrator Decompose Tasks"]
+    DB["DB Agent Schema Design"]
+    BE["Backend Agent API Endpoints"]
+    FE["Frontend Agent Components"]
+    SEC["Security Agent Audit (weight: 2.0)"]
+    QA["QA Agent Test Generation"]
+    Vote["Voting System"]
+    Human["Human Review (ties/vetoes)"]
+    Output["Final Output Code + Reports"]
+    MCP["MCP Server Project DB"]
+    RAG["RAG Docs Retrieval"]
+    Eval["Evaluation Pipeline"]
 
     User --> Orch
     Orch --> DB
