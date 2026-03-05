@@ -1,0 +1,63 @@
+name: Bug Report
+description: Report a failing test, broken exercise, or incorrect lesson content
+labels: ["bug"]
+body:
+  - type: dropdown
+    id: week
+    attributes:
+      label: Which week?
+      options:
+        - Week 1 - Agent Fundamentals
+        - Week 2 - Tool Use Deep Dive
+        - Week 3 - MCP Foundations
+        - Week 4 - RAG Agents
+        - Week 5 - Custom MCP Servers
+        - Week 6 - LangGraph Orchestration
+        - Week 7 - Multi-Agent Systems
+        - Week 8 - Voting and Conflicts
+        - Week 9 - Evaluation and Observability
+        - Week 10 - Production Deployment
+        - Week 11 - Capstone Build
+        - Week 12 - Capstone Polish
+        - Shared utilities
+        - Setup / Installation
+    validations:
+      required: true
+  - type: dropdown
+    id: file-type
+    attributes:
+      label: What has the issue?
+      options:
+        - Test file (test_*.py)
+        - Exercise code (*.py)
+        - Starter file (*_starter.py)
+        - Lesson (LESSON.md)
+        - README
+        - Setup (requirements.txt, Makefile, .env.example)
+        - Other
+    validations:
+      required: true
+  - type: textarea
+    id: description
+    attributes:
+      label: What happened?
+      placeholder: "Example: Running pytest test_agent.py gives KeyError on line 33"
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: What did you expect?
+      placeholder: "Example: All tests should pass"
+    validations:
+      required: true
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      value: |
+        - OS:
+        - Python version:
+        - pip freeze output for relevant packages:
+    validations:
+      required: false
