@@ -86,3 +86,13 @@ This work is licensed under [Creative Commons Attribution-NonCommercial-ShareAli
 You are free to use this material for learning and share it with others. You must give credit to [Arctyra AI](https://github.com/arctyra-ai). You may not use it for commercial purposes or sell it. If you adapt it, you must share your version under the same license.
 
 See [LICENSE](LICENSE) for full terms.
+
+---
+
+## Projects
+
+Applications built using multi-agent development pipelines.
+
+### Business Plan Generator
+
+AI-powered business plan generator with an 8-stage pipeline. Built with Next.js 14, TypeScript, and Tailwind CSS. Supports Anthropic, OpenAI, and custom LLM providers. [View Project →](./projects/business-plan-generator/)
