@@ -14,3 +14,6 @@ chroma_db/
 logs/
 eval_results/
 .DS_Store
+
+# Pipeline intermediate outputs (generated, not committed)
+projects/*/pipeline-outputs/
