@@ -16,7 +16,7 @@
  *   - npx tsx (TypeScript execution)
  */
 
-import { readFileSync, writeFileSync, mkdirSync } from "node:fs";
+import { readFileSync, writeFileSync, mkdirSync, existsSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -33,6 +33,7 @@ interface CLIConfig {
   apiKey: string;
   baseUrl?: string;
   promptFile: string;
+  resumeFrom?: string;
 }
 
 interface LLMResponse {
@@ -103,7 +104,7 @@ const AGENT_MAX_TOKENS: Record<string, number> = {
   E: 6_000,
   F: 14_000,
   G: 5_000,
-  H1: 24_000,
+  H1: 64_000,
   H2: 12_000,
 };
 
@@ -111,6 +112,8 @@ const AGENT_MAX_TOKENS: Record<string, number> = {
 // Update these as provider pricing changes.
 const MODEL_PRICING: Record<string, [number, number]> = {
   // Anthropic
+  "claude-opus-4-6": [5, 25],
+  "claude-sonnet-4-6": [3, 15],
   "claude-sonnet-4-20250514": [3, 15],
   "claude-opus-4-20250514": [15, 75],
   "claude-haiku-3-5-20241022": [0.8, 4],
@@ -141,11 +144,13 @@ function parseCLI(): CLIConfig {
   const apiKey = flags["api-key"];
   const baseUrl = flags["base-url"];
   const promptFile = flags["prompt-file"] ?? "pipeline-prompt.md";
+  const resumeFrom = flags["resume-from"];
 
   if (!provider || !model || !apiKey) {
     console.error(
-      `Usage: npx tsx run-pipeline.ts --provider <anthropic|openai|custom> --model <model> --api-key <key> [--base-url <url>] [--prompt-file <path>]`
+      `Usage: npx tsx run-pipeline.ts --provider <anthropic|openai|custom> --model <model> --api-key <key> [--base-url <url>] [--prompt-file <path>] [--resume-from <agent>]`
     );
+    console.error(`\n  --resume-from  Resume pipeline from a specific agent (e.g., H1). Loads prior outputs from pipeline-outputs/.`);
     process.exit(1);
   }
 
@@ -159,7 +164,7 @@ function parseCLI(): CLIConfig {
     process.exit(1);
   }
 
-  return { provider, model, apiKey, baseUrl, promptFile };
+  return { provider, model, apiKey, baseUrl, promptFile, resumeFrom };
 }
 
 // ============================================================
@@ -269,6 +274,8 @@ async function callLLM(
       "x-api-key": apiKey,
       "anthropic-version": "2023-06-01",
       "content-type": "application/json",
+      // Enable extended output (up to 128K tokens) for large code generation
+      ...(maxTokens > 16_384 ? { "anthropic-beta": "output-128k-2025-02-19" } : {}),
     };
     body = {
       model,
@@ -401,6 +408,56 @@ async function runPipeline(): Promise<void> {
   const outputDir = join(SCRIPT_DIR, "pipeline-outputs");
 
   mkdirSync(outputDir, { recursive: true });
+
+  // ----------------------------------------------------------
+  // Resume support: load existing outputs into variables map
+  // ----------------------------------------------------------
+  const PIPELINE_ORDER = ["A", "B", "C", "D1", "D2", "D3", "E", "F", "G", "H1", "H2"];
+  const resumeFrom = config.resumeFrom?.toUpperCase();
+  let resumeIdx = resumeFrom ? PIPELINE_ORDER.indexOf(resumeFrom) : -1;
+
+  if (resumeFrom && resumeIdx === -1) {
+    console.error(`Invalid --resume-from agent: ${resumeFrom}. Valid agents: ${PIPELINE_ORDER.join(", ")}`);
+    process.exit(1);
+  }
+
+  if (resumeFrom) {
+    console.log(`Resuming from Agent ${resumeFrom}. Loading prior outputs...\n`);
+
+    // Load all agent outputs that precede the resume point
+    for (let i = 0; i < resumeIdx; i++) {
+      const agentId = PIPELINE_ORDER[i];
+      const filePath = join(outputDir, `agent_${agentId.toLowerCase()}.md`);
+
+      if (existsSync(filePath)) {
+        const content = readFileSync(filePath, "utf-8");
+        const varName = `agent_${agentId.toLowerCase()}_output`;
+        variables.set(varName, content);
+        logLine(agentId, `loaded from file (${fmt(content.length)} chars)`);
+      } else {
+        console.error(`Missing required output: ${filePath}`);
+        console.error(`Cannot resume from ${resumeFrom} without prior agent outputs.`);
+        process.exit(1);
+      }
+    }
+
+    // Also build agent_d_combined if resuming past D3
+    if (resumeIdx > PIPELINE_ORDER.indexOf("D3")) {
+      const d1 = variables.get("agent_d1_output") ?? "";
+      const d2 = variables.get("agent_d2_output") ?? "";
+      const d3 = variables.get("agent_d3_output") ?? "";
+      const combined = [
+        "## AGENT D1 OUTPUT — Backend Engineer\n", d1,
+        "\n\n---\n\n",
+        "## AGENT D2 OUTPUT — Frontend Engineer\n", d2,
+        "\n\n---\n\n",
+        "## AGENT D3 OUTPUT — Integration Engineer\n", d3,
+      ].join("");
+      variables.set("agent_d_combined", combined);
+    }
+
+    console.log();
+  }
 
   const tokenLog: TokenUsageLog = {
     calls: [],
@@ -582,80 +639,102 @@ async function runPipeline(): Promise<void> {
   try {
     console.log(`\nPipeline starting — ${config.provider}/${config.model}\n`);
 
+    /** Returns true if this agent should be skipped (prior to resume point). */
+    function shouldSkip(agentId: string): boolean {
+      if (resumeIdx === -1) return false;
+      return PIPELINE_ORDER.indexOf(agentId) < resumeIdx;
+    }
+
     // === A: Product Manager & Architect ===
-    const startA = new Date().toISOString();
-    await execAgent("A");
-    pipelineLog.push({
-      agent: "A",
-      start_time: startA,
-      end_time: new Date().toISOString(),
-      verdict: null,
-      retry_count: 0,
-      status: "success",
-    });
+    if (!shouldSkip("A")) {
+      const startA = new Date().toISOString();
+      await execAgent("A");
+      pipelineLog.push({
+        agent: "A",
+        start_time: startA,
+        end_time: new Date().toISOString(),
+        verdict: null,
+        retry_count: 0,
+        status: "success",
+      });
+    }
 
     // === B: Senior Engineer Reviewer (BLOCKING) ===
-    await execBlockingGate("B", async (failureReport, attempt) => {
-      await execAgent("A", attempt, failureReport);
-    });
+    if (!shouldSkip("B")) {
+      await execBlockingGate("B", async (failureReport, attempt) => {
+        await execAgent("A", attempt, failureReport);
+      });
+    }
 
     // === C: Senior Engineer & Architect ===
-    const startC = new Date().toISOString();
-    await execAgent("C");
-    pipelineLog.push({
-      agent: "C",
-      start_time: startC,
-      end_time: new Date().toISOString(),
-      verdict: null,
-      retry_count: 0,
-      status: "success",
-    });
+    if (!shouldSkip("C")) {
+      const startC = new Date().toISOString();
+      await execAgent("C");
+      pipelineLog.push({
+        agent: "C",
+        start_time: startC,
+        end_time: new Date().toISOString(),
+        verdict: null,
+        retry_count: 0,
+        status: "success",
+      });
+    }
 
     // === D: Development Phase (D1‖D2 → D3) ===
-    const startD = new Date().toISOString();
-    await execDevelopmentPhase();
-    pipelineLog.push({
-      agent: "D",
-      start_time: startD,
-      end_time: new Date().toISOString(),
-      verdict: null,
-      retry_count: 0,
-      status: "success",
-    });
+    if (!shouldSkip("D3")) {
+      const startD = new Date().toISOString();
+      await execDevelopmentPhase();
+      pipelineLog.push({
+        agent: "D",
+        start_time: startD,
+        end_time: new Date().toISOString(),
+        verdict: null,
+        retry_count: 0,
+        status: "success",
+      });
+    }
 
     // === E: QA (BLOCKING) ===
-    await execBlockingGate("E", async (failureReport, attempt) => {
-      await execDevelopmentPhase(failureReport, attempt);
-    });
+    if (!shouldSkip("E")) {
+      await execBlockingGate("E", async (failureReport, attempt) => {
+        await execDevelopmentPhase(failureReport, attempt);
+      });
+    }
 
     // === F: Code Revision ===
-    const startF = new Date().toISOString();
-    await execAgent("F");
-    pipelineLog.push({
-      agent: "F",
-      start_time: startF,
-      end_time: new Date().toISOString(),
-      verdict: null,
-      retry_count: 0,
-      status: "success",
-    });
+    if (!shouldSkip("F")) {
+      const startF = new Date().toISOString();
+      await execAgent("F");
+      pipelineLog.push({
+        agent: "F",
+        start_time: startF,
+        end_time: new Date().toISOString(),
+        verdict: null,
+        retry_count: 0,
+        status: "success",
+      });
+    }
 
     // === G: Security Audit (BLOCKING) ===
-    await execBlockingGate("G", async (failureReport, attempt) => {
-      await execAgent("F", attempt, failureReport);
-    });
+    if (!shouldSkip("G")) {
+      await execBlockingGate("G", async (failureReport, attempt) => {
+        await execAgent("F", attempt, failureReport);
+      });
+    }
 
     // === H1: Final Code ===
-    const startH1 = new Date().toISOString();
-    await execAgent("H1");
-    pipelineLog.push({
-      agent: "H1",
-      start_time: startH1,
-      end_time: new Date().toISOString(),
-      verdict: null,
-      retry_count: 0,
-      status: "success",
-    });
+    if (!shouldSkip("H1")) {
+      const startH1 = new Date().toISOString();
+      await execAgent("H1");
+      pipelineLog.push({
+        agent: "H1",
+        start_time: startH1,
+        end_time: new Date().toISOString(),
+        verdict: null,
+        retry_count: 0,
+        status: "success",
+      });
+    }
 
     // === H2: Documentation ===
     const startH2 = new Date().toISOString();
