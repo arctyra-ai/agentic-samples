@@ -1,0 +1,37 @@
+{
+  "name": "ai-readiness-scorecard",
+  "version": "1.0.0",
+  "description": "A 17-question self-assessment tool that evaluates organizational readiness for AI adoption",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint"
+  },
+  "dependencies": {
+    "jspdf": "^2.5.2",
+    "lucide-react": "^0.454.0",
+    "next": "16.1.6",
+    "react": "19.2.0",
+    "react-dom": "19.2.0"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4.2.1",
+    "@types/node": "^22",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "autoprefixer": "^10.4.20",
+    "postcss": "^8.5",
+    "tailwindcss": "^4.1.9",
+    "typescript": "^5"
+  },
+  "keywords": [
+    "ai-readiness",
+    "assessment",
+    "scorecard",
+    "ai-adoption",
+    "next.js"
+  ],
+  "license": "MIT"
+}
